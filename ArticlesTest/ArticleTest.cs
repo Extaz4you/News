@@ -35,7 +35,7 @@ public class ArticleTest
     }
 
     [Fact]
-    public async Task DB_returned_news_equal_two()
+    public async Task DB_should_be_result_equal_true_and_value_is_list()
     {
         await using var context = new ArticlesContext(_dbOptions);
         var mockCache = new Mock<IDistributedCache>();
@@ -51,6 +51,25 @@ public class ArticleTest
         Assert.IsType<OkObjectResult>(result.Result);
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         Assert.IsAssignableFrom<IEnumerable<Article>>(okResult.Value);
+
+    }
+
+    [Fact]
+    public async Task DB_should_return_first_element()
+    {
+        await using var context = new ArticlesContext(_dbOptions);
+        var mockCache = new Mock<IDistributedCache>();
+        mockCache.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((byte[])null);
+        var service = new ArticleService(context, mockCache.Object);
+        var controller = new ArticleController(service, Mock.Of<ILogger<ArticleController>>());
+
+        var result = await controller.GetById(1);
+
+
+        Assert.IsType<OkObjectResult>(result.Result);
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.IsAssignableFrom<Article>(okResult.Value);
 
     }
 }

@@ -29,7 +29,7 @@ public class ArticleController : ControllerBase
     [HttpGet]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
-    public async Task<ActionResult<bool>> All(CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<Article>>> All(CancellationToken ct = default)
     {
         var result = await service.All(ct);
         if (result == null)
@@ -48,7 +48,7 @@ public class ArticleController : ControllerBase
     [HttpGet("{id:int}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
-    public async Task<ActionResult<IEnumerable<Article>>> GetById(int id)
+    public async Task<ActionResult<Article>> GetById(int id)
     {
 
         var result = await service.Get(id);

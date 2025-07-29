@@ -1,14 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Identity.Client;
 using News.Backend.Articles.Db;
 using News.Backend.Articles.Models;
+using News.Backend.Articles.Services.Interfaces;
 using System.Collections;
 using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 
 namespace News.Backend.Articles.Services;
 
-public class ArticleService
+public class ArticleService : IArticleRepository
 {
     private readonly ArticlesContext context;
     private readonly IDistributedCache cache;
@@ -24,6 +26,11 @@ public class ArticleService
         byte[] cached = await cache.GetAsync(cacheKey);
         if(cached != null) return JsonSerializer.Deserialize<List<Article>>(cached);
         var articles = await context.Articles.ToListAsync(ct);
+        var cacheOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        };
+        await cache.SetAsync(cacheKey, JsonSerializer.SerializeToUtf8Bytes(articles), cacheOptions);
         return articles;
     }
 

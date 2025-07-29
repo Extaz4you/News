@@ -14,12 +14,12 @@ namespace News.Backend.Articles
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddStackExchangeRedisCache(o =>
-            {
-                o.Configuration = builder.Configuration["RedisConfig"];
-                o.InstanceName = "News_Articles_";
-            });
-
+            //builder.Services.AddStackExchangeRedisCache(o =>
+            //{
+            //    o.Configuration = builder.Configuration["RedisConfig"];
+            //    o.InstanceName = "News_Articles_";
+            //});
+            builder.Services.AddDistributedMemoryCache();
             builder.Host.UseSerilog((context, config) =>
             {
                 config
@@ -45,7 +45,7 @@ namespace News.Backend.Articles
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<ArticlesContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Connection")));
+            builder.Services.AddDbContext<ArticlesContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("Connection2")));
             builder.Services.AddScoped<ArticleService>(); 
             var app = builder.Build();
 

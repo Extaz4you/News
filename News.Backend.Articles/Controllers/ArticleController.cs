@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using News.Backend.Articles.Models;
 using News.Backend.Articles.Services;
+using News.Backend.Articles.Services.Interfaces;
 
 namespace News.Backend.Articles.Controllers;
 
@@ -11,10 +12,10 @@ namespace News.Backend.Articles.Controllers;
 [Produces("application/json")]
 public class ArticleController : ControllerBase
 {
-    private readonly ArticleService service;
+    private readonly IArticleRepository service;
     private readonly ILogger<ArticleController> logger;
 
-    public ArticleController(ArticleService articleService, ILogger<ArticleController> log)
+    public ArticleController(IArticleRepository articleService, ILogger<ArticleController> log)
     {
         service = articleService;
         logger = log;

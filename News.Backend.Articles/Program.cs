@@ -14,11 +14,17 @@ namespace News.Backend.Articles
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddStackExchangeRedisCache(o =>
+            {
+                o.Configuration = builder.Configuration["RedisConfig"];
+                o.InstanceName = "News_Articles_";
+            });
+
             builder.Host.UseSerilog((context, config) =>
             {
                 config
                     .MinimumLevel.Information()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Debug)
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                     .Enrich.FromLogContext()
                     .Enrich.WithProperty("App", context.HostingEnvironment.ApplicationName);
 

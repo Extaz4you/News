@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using News.Backend.Articles.Models;
 using News.Backend.Articles.Services;
 
@@ -12,29 +13,43 @@ public class ArticleController : ControllerBase
 {
     private readonly ArticleService service;
     private readonly ILogger<ArticleController> logger;
+
     public ArticleController(ArticleService articleService, ILogger<ArticleController> log)
     {
         service = articleService;
         logger = log;
     }
 
+
+    /// <summary>
+    /// Получить все новости
+    /// </summary>
+    /// <response code="200">Возвращает список</response>
     [HttpGet]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     public async Task<ActionResult<bool>> All(CancellationToken ct = default)
     {
-        logger.LogDebug("Getting all articles");
         var result = await service.All(ct);
-        if (result == null) return NoContent();
+        if (result == null)
+        {
+            logger.LogInformation($"Not found");
+            return NoContent();
+        }
         else return Ok(result);
     }
 
+
+    /// <summary>
+    /// Получить новость по ID
+    /// </summary>
+    /// <response code="200">Возвращает новость</response>
     [HttpGet("{id:int}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
     public async Task<ActionResult<IEnumerable<Article>>> GetById(int id)
     {
-        logger.LogDebug("Getting by id article");
+
         var result = await service.Get(id);
         if (result == null)
         {
@@ -44,12 +59,16 @@ public class ArticleController : ControllerBase
         else return Ok(result);
     }
 
+
+    /// <summary>
+    /// Создать новость
+    /// </summary>
+    /// <response code="201">Возвращает ID созданной новости</response>
     [HttpPost]
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     public async Task<ActionResult<Article>> Create(Article article)
     {
-        logger.LogDebug("Creating article");
         if (!ModelState.IsValid)
         {
             logger.LogInformation($"Model is not valid");
@@ -64,12 +83,16 @@ public class ArticleController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = article.Id }, article);
     }
 
+
+    /// <summary>
+    /// Обновить новость
+    /// </summary>
+    /// <response code="200">Возвращает bool</response>
     [HttpPut]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     public async Task<ActionResult<bool>> Update(Article article)
     {
-        logger.LogDebug("Updating article");
         var result = await service.Update(article);
         if (result.Success == false)
         {
@@ -79,12 +102,16 @@ public class ArticleController : ControllerBase
         return Ok(result.Success);
     }
 
+
+    /// <summary>
+    /// Удалить новость по ID
+    /// </summary>
+    /// <response code="200">Возвращает bool</response>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     public async Task<ActionResult<bool>> Delete(int id)
     {
-        logger.LogDebug("Updating article");
         var result = await service.Delete(id);
         if (result.Success == false)
         {

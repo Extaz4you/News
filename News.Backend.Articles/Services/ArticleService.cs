@@ -1,27 +1,48 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using News.Backend.Articles.Db;
 using News.Backend.Articles.Models;
 using System.Collections;
 using System.Reflection.Metadata.Ecma335;
+using System.Text.Json;
 
 namespace News.Backend.Articles.Services;
 
 public class ArticleService
 {
-    private ArticlesContext context;
-    public ArticleService(ArticlesContext articlesContext)
+    private readonly ArticlesContext context;
+    private readonly IDistributedCache cache;
+    public ArticleService(ArticlesContext articlesContext, IDistributedCache distributedCache)
     {
         context = articlesContext;
+        cache = distributedCache;
     }
 
     public async Task<IEnumerable<Article>> All(CancellationToken ct = default)
     {
-        return await context.Articles.ToListAsync(ct);
+        var cacheKey = $"AllNews";
+        byte[] cached = await cache.GetAsync(cacheKey);
+        if(cached != null) return JsonSerializer.Deserialize<List<Article>>(cached);
+        var articles = await context.Articles.ToListAsync(ct);
+        return articles;
     }
 
     public async Task<Article?> Get(int id)
     {
-        return await context.Articles.FirstOrDefaultAsync(x => x.Id == id);
+        var cacheKey = $"News_{id}";
+
+        byte[] cached = await cache.GetAsync(cacheKey);
+        if (cached != null) return JsonSerializer.Deserialize<Article>(cached);
+
+        var article = await context.Articles.FirstOrDefaultAsync(x => x.Id == id);
+        if (article == null) return null;
+        var cacheOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+        };
+        await cache.SetAsync(cacheKey, JsonSerializer.SerializeToUtf8Bytes(article), cacheOptions);
+
+        return article;
     }
 
     public async Task<OperationResult> Delete(int id)
@@ -32,6 +53,8 @@ public class ArticleService
         {
             context.Articles.Remove(article);
             await context.SaveChangesAsync();
+            await cache.RemoveAsync($"News_{id}");
+            await cache.RemoveAsync($"AllNews");
             return new OperationResult(true);
         }
         catch(Exception ex) { return new OperationResult(false, ex.Message); }
@@ -46,6 +69,7 @@ public class ArticleService
         {
             await context.AddAsync(article);
             await context.SaveChangesAsync();
+            await cache.RemoveAsync($"AllNews");
             return new OperationResult(true);
         }
         catch (Exception ex) { return new OperationResult(false, ex.Message); }
@@ -62,6 +86,8 @@ public class ArticleService
             updatedArticle.Theme = article.Theme;
             updatedArticle.Content = article.Content;
             await context.SaveChangesAsync();
+            await cache.RemoveAsync($"News_{article.Id}");
+            await cache.RemoveAsync($"AllNews");
             return new OperationResult(true);
         }
         catch (Exception ex) { return new OperationResult(false, ex.Message); }

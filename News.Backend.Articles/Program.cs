@@ -46,7 +46,7 @@ namespace News.Backend.Articles
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<ArticlesContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("Connection2")));
+            builder.Services.AddDbContext<ArticlesContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Connection3")));
             builder.Services.AddScoped<IArticleRepository ,ArticleService>(); 
             var app = builder.Build();
 

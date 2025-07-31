@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # service 1
+  article-db:
+    image: postgres
+    container_name: article-db
+    environment:
+        POSTGRES_DB: articledb
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: mysecretpass
+    volumes:
+        - news-db-data:/var/lib/postgresql/data
+    ports:
+    - "5432:5432"
+    networks:
+    - news-network
+  #service 2
+  article-api:
+    container_name: article-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+     - article-db
+    environment:
+        ASPNETCORE_ENVIRONMENT: Production
+    ports:
+     - "5000:8080"
+    networks:
+    - news-network
+
+volumes:
+  news-db-data:
+  
+networks:
+  news-network: 

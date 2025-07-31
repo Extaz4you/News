@@ -56,6 +56,11 @@ namespace News.Backend.Articles
             app.UseHttpsRedirection();
             app.UseAuthorization();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ArticlesContext>();
+                dbContext.Database.Migrate(); // Применяет миграции
+            }
 
             app.MapControllers();
 

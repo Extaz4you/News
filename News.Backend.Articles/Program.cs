@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using News.Backend.Articles.Db;
 using News.Backend.Articles.Services;
+using News.Backend.Articles.Services.Interfaces;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
@@ -46,7 +47,7 @@ namespace News.Backend.Articles
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ArticlesContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("Connection2")));
-            builder.Services.AddScoped<ArticleService>(); 
+            builder.Services.AddScoped<IArticleRepository ,ArticleService>(); 
             var app = builder.Build();
 
             app.UseSwagger();

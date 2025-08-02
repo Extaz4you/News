@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.AspNetCore.Mvc;
 using News.Backend.Articles.Models;
-using News.Backend.Articles.Services;
 using News.Backend.Articles.Services.Interfaces;
 
 namespace News.Backend.Articles.Controllers;
@@ -21,7 +18,6 @@ public class ArticleController : ControllerBase
         logger = log;
     }
 
-
     /// <summary>
     /// Получить все новости
     /// </summary>
@@ -29,17 +25,16 @@ public class ArticleController : ControllerBase
     [HttpGet]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
-    public async Task<ActionResult<IEnumerable<Article>>> All(CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<Article>>> All(CancellationToken ct)
     {
         var result = await service.All(ct);
-        if (result == null)
+        if (result.Any() == false)
         {
             logger.LogInformation($"Not found");
             return NoContent();
         }
         else return Ok(result);
     }
-
 
     /// <summary>
     /// Получить новость по ID
@@ -50,7 +45,6 @@ public class ArticleController : ControllerBase
     [ProducesResponseType(404)]
     public async Task<ActionResult<Article>> GetById(int id)
     {
-
         var result = await service.Get(id);
         if (result == null)
         {
@@ -83,7 +77,6 @@ public class ArticleController : ControllerBase
         }
         return CreatedAtAction(nameof(GetById), new { id = article.Id }, article);
     }
-
 
     /// <summary>
     /// Обновить новость

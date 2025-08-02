@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using News.Backend.Articles.Db;
 using News.Backend.Articles.Services;
@@ -6,6 +5,7 @@ using News.Backend.Articles.Services.Interfaces;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using System.Diagnostics;
 
 namespace News.Backend.Articles
 {
@@ -28,7 +28,6 @@ namespace News.Backend.Articles
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                     .Enrich.FromLogContext()
                     .Enrich.WithProperty("App", context.HostingEnvironment.ApplicationName);
-
                 config.WriteTo.File(
                     path: context.Configuration["FileLog:Path"] ?? "./logs/log-.json",
                     rollingInterval: RollingInterval.Day,
@@ -47,7 +46,7 @@ namespace News.Backend.Articles
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<ArticlesContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Connection3")));
-            builder.Services.AddScoped<IArticleRepository ,ArticleService>(); 
+            builder.Services.AddScoped<IArticleRepository, ArticleService>();
             var app = builder.Build();
 
             app.UseSwagger();

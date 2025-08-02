@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using News.Backend.Articles.Db;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace News.Backend.Articles.Models;
 
-public class Article
+public class Article : Deletable
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -14,12 +15,12 @@ public class Article
 
     [Required(ErrorMessage = "Theme is required")]
     [StringLength(50, MinimumLength = 5, ErrorMessage = "Theme must be min 5 max 50 characters")]
-    public string Theme { get; set; } = string.Empty;
+    public string Theme { get; set; } = null!;
 
     [Required(ErrorMessage = "Content is required")]
     [StringLength(100, MinimumLength = 5, ErrorMessage = "Content must be min 5 max 100 characters")]
     public string Content { get; set; } = string.Empty;
 
-    public DateTime DatePublication { get; set; } = DateTime.UtcNow;
-
+    public DateTime DatePublication { get; set; }
+    public bool Deleted { get; set; }
 }
